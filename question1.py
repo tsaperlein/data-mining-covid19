@@ -72,7 +72,7 @@ df_last = df_last.drop('Continent', axis=1)
 df_last = column_continent.join(df_last[(np.abs(zscore(df_last)) < 3).all(axis=1)])
 
 # Plot feature-output-variable distributions for each column
-for column in df_last.columns:
+for column in df_last.columns.drop(['Cases', 'Deaths']):
     fig, ax = plt.subplots(ncols=2, figsize=(14, 4))
     df_last.plot.scatter(x=column, y='Cases', ax=ax[0])
     df_last.plot.scatter(x=column, y='Deaths', ax=ax[1])
@@ -81,3 +81,8 @@ for column in df_last.columns:
     file_name = column.replace("/", "-")
     plt.savefig(f"images/Scatter/{file_name}-scatter.png", bbox_inches='tight')
     plt.close()
+#scatter deaths-cases
+fig, ax = plt.subplots(figsize=(10, 6))
+df_last.plot.scatter(x='Cases', y='Deaths', ax=ax)
+plt.savefig(f"images/Scatter/deaths-cases-scatter.png", bbox_inches='tight')
+plt.close()
