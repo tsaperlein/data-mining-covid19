@@ -33,17 +33,18 @@ print(df.isnull().sum())
 for column in df.drop(['Entity', 'Continent', 'Date', 'Daily tests', 'Cases', 'Deaths'], axis=1):
     plt.figure()
     df.boxplot([column])
-    plt.savefig(f"boxplots/{column}.png")
+    file_name = column.replace("/", "-")
+    plt.savefig(f"boxplots/{file_name}.png")
     
 # --- Plot histograms for each column
 columns = ['Date', 'Daily tests', 'Cases', 'Deaths']
+plt.figure(figsize=(16, 9))
 df.drop(columns, axis=1).drop_duplicates().hist(bins=15, figsize=(16, 9), rwidth=0.8)
-plt.savefig("histograms.png")
+plt.savefig("../histograms.png", bbox_inches='tight')
 
 # --- Plot heatmap for correlation between columns
 # Keep the last line (date) for each country and drop unused columns
 df_last = df.groupby(df['Entity']).tail(1).drop(['Entity', 'Date', 'Continent'], axis=1)
 plt.figure(figsize=(12, 8))
 sns.heatmap(df_last.corr(), annot=True, cmap=plt.cm.Reds)
-plt.savefig("correlation-heatmap.png")
-plt.show()
+plt.savefig("../correlation-heatmap.png", bbox_inches='tight')
