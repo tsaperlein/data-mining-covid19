@@ -32,6 +32,12 @@ df = df[df.Cases > 0]
 
 
 # --- MAP ------------------------------------
+# Find the range of longitude and latitude in the data
+min_longitude = df['Longitude'].min()
+max_longitude = df['Longitude'].max()
+min_latitude = df['Latitude'].min()
+max_latitude = df['Latitude'].max()
+
 def lng_lat_to_pixels(lng, lat):    
     lng_rad = lng * np.pi / 180
     lat_rad = lat * np.pi / 180
@@ -40,21 +46,22 @@ def lng_lat_to_pixels(lng, lat):
     return (x, y)
 
 # Group by "Entity" and find the maximum value of "Deaths" for each group
-max_deaths_index = df.groupby('Entity')['Deaths'].idxmax()
+max_deaths_index = df.groupby(df['Entity'])['Deaths'].idxmax()
 max_deaths = df.loc[max_deaths_index]
 
 px, py = lng_lat_to_pixels(max_deaths['Longitude'], max_deaths['Latitude'])
 sizes = max_deaths['Deaths'].values
+extent = [px.min(), px.max(), py.min(), py.max()] 
 
-print(px.min(), py.min(), px.max(), py.max())
+print(extent[0], extent[1], extent[2], extent[3])
 
 # Plot the points
-plt.figure(figsize=(12, 10))
+plt.figure(figsize=(12, 8))
 im = plt.imread("map.jpg")
-plt.imshow(im, extent=[52.37, 255.58, -31.92, 61.31])
+plt.imshow(im, extent=extent)
 plt.axis('equal')
 # plt.axis('off')
-plt.gca().set_facecolor('white')
+plt.gca().set_facecolor('gray')
 _ = plt.scatter(px, py, s=0.001*sizes, color='black')
 plt.show()
 # --------------------------------------------
