@@ -14,31 +14,25 @@ print(stats)
 NaNs_data_df = df.isnull().sum().sort_values(ascending=False)
 print(NaNs_data_df)
 
-# --- Plot/save figures for each column
-# for column in df.columns:
-#     plt.figure()  # Create a new figure for each plot
-#     sns.histplot(df[column])
-#     plt.title(column)  # Add the column name as the title
-#     plt.savefig(f"{column}.png")
-
 # --- Fill missing values in columns
 # Group by Entity and fill missing values
 df = df.groupby(df['Entity']).apply(lambda x: x.fillna(method='ffill'))
 df = df.groupby(df['Entity']).apply(lambda x: x.fillna(method='bfill'))
-
 # Filter out rows with no cases
 df = df[df.Cases > 0]
 
-print(df.isnull().sum())
-
 # --- Plot/save boxplots for each column
-for column in df.drop(['Entity', 'Continent', 'Date', 'Daily tests', 'Cases', 'Deaths'], axis=1):
-    plt.figure()
-    df.boxplot([column])
-    file_name = column.replace("/", "-")
-    plt.savefig(f"boxplots/{file_name}.png")
-    plt.close()
-    
+columns = ['Entity', 'Continent', 'Date', 'Daily tests', 'Cases', 'Deaths']
+data = df.drop(columns, axis=1).drop_duplicates()
+fig, axs = plt.subplots(3, 3, figsize=(12, 8))
+axs = axs.flatten()
+for i, col in enumerate(data.columns):
+    axs[i].boxplot(data[col])
+    axs[i].set_title(col)
+plt.tight_layout()
+plt.savefig("images/boxplots.png", bbox_inches='tight')
+plt.close()
+
 # --- Plot histograms for each column
 columns = ['Date', 'Daily tests', 'Cases', 'Deaths']
 plt.figure(figsize=(16, 9))
@@ -55,7 +49,7 @@ plt.savefig("images/correlation-heatmap.png", bbox_inches='tight')
 plt.close()
 
 # --- Plot case and death curves for selected countries
-# Target countries and target dates
+""" # Target countries and target dates
 countries = ['Algeria', 'Bahrain', 'Ethiopia', 'Ghana', 'Kenya', 'Morocco', 'Nigeria', 'Senegal', 'Tunisia']
 df_temp = df.loc[df['Date'] > '2020-02-25']
 
@@ -68,7 +62,7 @@ for output_variable in ['Cases', 'Deaths']:
     plt.xticks(rotation=90)
     plt.ylabel(output_variable)
     plt.savefig(f"images/Curves/{output_variable}-curves.png", bbox_inches='tight')
-    plt.close()
+    plt.close() """
     
 # --- Plot feature-output-variable distributions for each column
 # Scatter plots readability: remove outliers in all comuns except in the column 'Continent'
