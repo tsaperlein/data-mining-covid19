@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.stats import zscore
@@ -29,6 +30,43 @@ df = df.groupby(df['Entity']).apply(lambda x: x.fillna(method='bfill'))
 # Filter out rows with no cases
 df = df[df.Cases > 0]
 
+
+# --- Cases - Deaths ------------------------------------
+# --- Plot the number of cases and deaths passing through time
+# Convert date column to datetime format
+df['Date'] = pd.to_datetime(df['Date'])
+
+# Create a new dataframe with the required data
+data = df[['Date', 'Entity', 'Cases', 'Deaths']]
+data = data.groupby('Date').sum().reset_index()
+
+# Create figure and axes
+fig, ax = plt.subplots()
+
+# Plot cases and deaths for all entities
+ax.plot(data['Date'], data['Cases'], label='Cases')
+ax.plot(data['Date'], data['Deaths'], label='Deaths')
+
+# Set x and y labels
+ax.set_xlabel('Month')
+ax.set_ylabel('Number')
+
+# Format x-axis labels
+month_format = mpl.dates.DateFormatter('%b')
+ax.xaxis.set_major_formatter(month_format)
+ax.xaxis.set_major_locator(mpl.dates.MonthLocator())
+ax.xaxis.set_minor_locator(mpl.dates.MonthLocator(bymonthday=15))
+
+# Set y-axis limits
+ax.set_ylim(bottom=1)
+ax.set_yscale('log')
+
+# Add legend
+ax.legend()
+
+# Save plot
+plt.savefig('cases-deaths-diagram.png', dpi=300, bbox_inches='tight')
+# --------------------------------------------
 
 
 # --- MAP ------------------------------------
