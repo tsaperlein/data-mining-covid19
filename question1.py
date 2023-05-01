@@ -17,19 +17,19 @@ NaNs_data_df = df.isnull().sum().sort_values(ascending=False)
 print("\n \n")
 print(NaNs_data_df)
 
+# Filter out inaccurate values in "Daily tests" 
+negative_tests = (df['Daily tests'] < 0).sum()
+print("\n \nNegative daily tests:", negative_tests)
+df.drop(df[df['Daily tests'] < 0].index, inplace = True)
 
 # --- Fill missing values in columns
-# Fill missing values in "Daily tests" column with the mean of the column
-df['Daily tests'] = df['Daily tests'].fillna(df.groupby('Entity')['Daily tests'].transform('mean'))
+# Fill missing values in "Daily tests" column
+df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='ffill'))
+df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='bfill'))
 # Fill missing values in "Cases" column with 0
 df['Cases'] = df['Cases'].fillna(0)
 # Fill missing values in "Deaths" column with 0
 df['Deaths'] = df['Deaths'].fillna(0)
-
-# Filter out inaccurate values in "Daily tests" 
-negative_tests = (df['Daily tests'] < 0).sum()
-print("\n \nNegative daily tests:", negative_tests)
-df = df[df['Daily tests'] >= 0]
 
 
 # --- TIMELINE ------------------------------------
