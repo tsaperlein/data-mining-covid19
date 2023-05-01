@@ -17,21 +17,22 @@ NaNs_data_df = df.isnull().sum().sort_values(ascending=False)
 print("\n \n")
 print(NaNs_data_df)
 
-# Filter out inaccurate values
+
+# --- Fill missing values in columns
+# Fill missing values in "Daily tests" column with the mean of the column
+df['Daily tests'] = df['Daily tests'].fillna(df.groupby('Entity')['Daily tests'].transform('mean'))
+# Fill missing values in "Cases" column with 0
+df['Cases'] = df['Cases'].fillna(0)
+# Fill missing values in "Deaths" column with 0
+df['Deaths'] = df['Deaths'].fillna(0)
+
+# Filter out inaccurate values in "Daily tests" 
 negative_tests = (df['Daily tests'] < 0).sum()
 print("\n \nNegative daily tests:", negative_tests)
 df = df[df['Daily tests'] >= 0]
 
 
-# --- Fill missing values in columns
-# Group by Entity and fill missing values
-df = df.groupby(df['Entity']).apply(lambda x: x.fillna(method='ffill'))
-df = df.groupby(df['Entity']).apply(lambda x: x.fillna(method='bfill'))
-# Filter out rows with no cases
-df = df[df.Cases > 0]
-
-
-# --- Cases - Deaths ------------------------------------
+# --- TIMELINE ------------------------------------
 # --- Plot the number of cases and deaths passing through time
 # Convert date column to datetime format
 df['Date'] = pd.to_datetime(df['Date'])
@@ -86,12 +87,10 @@ px, py = lng_lat_to_pixels(max_deaths['Longitude'], max_deaths['Latitude'])
 sizes = max_deaths['Deaths'].values / max_deaths['Population'].values
 extent = [px.min(), px.max(), py.min(), py.max()] 
 
-print(extent[0], extent[1], extent[2], extent[3])
 
 # Plot the points
 plt.figure(figsize=(12, 8))
 plt.axis('equal')
-# plt.axis('off')
 plt.gca().set_facecolor('gray')
 _ = plt.scatter(px, py, s=5000*sizes, color='black')
 plt.savefig('images/deaths_population_map.png', dpi=300, bbox_inches='tight')
@@ -124,22 +123,6 @@ plt.figure(figsize=(12, 8))
 sns.heatmap(df_last.corr(), annot=True, cmap=plt.cm.Reds)
 plt.savefig("images/correlation-heatmap.png", bbox_inches='tight')
 plt.close()
-
-# --- Plot case and death curves for selected countries
-""" # Target countries and target dates
-countries = ['Algeria', 'Bahrain', 'Ethiopia', 'Ghana', 'Kenya', 'Morocco', 'Nigeria', 'Senegal', 'Tunisia']
-df_temp = df.loc[df['Date'] > '2020-02-25']
-
-# Plot case and death curves
-for output_variable in ['Cases', 'Deaths']:
-    fig, ax = plt.subplots(figsize=(10, 6))
-    for key, grp in df_temp[df_temp['Entity'].isin(countries)].groupby(df['Entity']):
-        ax = grp.plot(ax=ax, kind='line', x='Date', y=output_variable, label=key)
-    plt.legend(loc='best')
-    plt.xticks(rotation=90)
-    plt.ylabel(output_variable)
-    plt.savefig(f"images/Curves/{output_variable}-curves.png", bbox_inches='tight')
-    plt.close() """
     
 # --- Plot feature-output-variable distributions for each column
 # Scatter plots readability: remove outliers in all comuns except in the column 'Continent'
