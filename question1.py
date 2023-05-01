@@ -65,17 +65,12 @@ ax.set_yscale('log')
 ax.legend()
 
 # Save plot
-plt.savefig('cases-deaths-diagram.png', dpi=300, bbox_inches='tight')
+plt.savefig('images/cases_deaths_diagram.png', dpi=300, bbox_inches='tight')
 # --------------------------------------------
 
 
 # --- MAP ------------------------------------
 # Find the range of longitude and latitude in the data
-min_longitude = df['Longitude'].min()
-max_longitude = df['Longitude'].max()
-min_latitude = df['Latitude'].min()
-max_latitude = df['Latitude'].max()
-
 def lng_lat_to_pixels(lng, lat):    
     lng_rad = lng * np.pi / 180
     lat_rad = lat * np.pi / 180
@@ -88,20 +83,18 @@ max_deaths_index = df.groupby(df['Entity'])['Deaths'].idxmax()
 max_deaths = df.loc[max_deaths_index]
 
 px, py = lng_lat_to_pixels(max_deaths['Longitude'], max_deaths['Latitude'])
-sizes = max_deaths['Deaths'].values
+sizes = max_deaths['Deaths'].values / max_deaths['Population'].values
 extent = [px.min(), px.max(), py.min(), py.max()] 
 
 print(extent[0], extent[1], extent[2], extent[3])
 
 # Plot the points
 plt.figure(figsize=(12, 8))
-im = plt.imread("map.jpg")
-plt.imshow(im, extent=extent)
 plt.axis('equal')
 # plt.axis('off')
 plt.gca().set_facecolor('gray')
-_ = plt.scatter(px, py, s=0.001*sizes, color='black')
-plt.show()
+_ = plt.scatter(px, py, s=5000*sizes, color='black')
+plt.savefig('images/deaths_population_map.png', dpi=300, bbox_inches='tight')
 # --------------------------------------------
 
 
