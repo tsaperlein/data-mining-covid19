@@ -16,6 +16,8 @@ df.drop(df[df['Daily tests'] < 0].index, inplace = True)
 
 # --- Fill missing values in columns
 # Fill missing values in "Daily tests" column
+# df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='ffill'))
+# df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='bfill'))
 df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='ffill')).reset_index(drop=True)
 df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='bfill')).reset_index(drop=True)
 # Fill missing values in "Cases" column with 0
@@ -38,6 +40,7 @@ grouped = df.groupby(['Entity', pd.Grouper(key='Date', freq='W-MON')]).agg({
 first_week = grouped.groupby('Entity').head(1)
 
 # calculate the new columns
+# grouped['Cases/tests per week'] = grouped['Cases'].diff() / grouped['Daily tests']
 grouped['Cases/tests per week'] = np.where(grouped['Daily tests'] != 0, grouped['Cases'].diff() / grouped['Daily tests'], 0)
 grouped['Deaths/cases per week'] = grouped['Deaths'].diff() / grouped['Cases'].diff()
 grouped['Tests/population per week'] = grouped['Daily tests'] / grouped['Population']
