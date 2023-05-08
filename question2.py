@@ -29,61 +29,70 @@ df['Deaths'] = df['Deaths'].fillna(0)
 df['Date'] = pd.to_datetime(df['Date'])
 
 # group the data by country and week, and aggregate the columns
-grouped = df.groupby(['Entity', pd.Grouper(key='Date', freq='W-MON')]).agg({
+grouped = df.groupby(['Entity']).agg({
     'Daily tests': 'sum',
     'Cases': 'max',
     'Deaths': 'max',
-    'Population': 'max'
+    'Population': 'mean'
 })
 
-# get the first week of each country
-first_week = grouped.groupby('Entity').head(1)
-
 # calculate the new columns
-# grouped['Cases/tests per week'] = grouped['Cases'].diff() / grouped['Daily tests']
-grouped['Cases/tests per week'] = np.where(grouped['Daily tests'] != 0, grouped['Cases'].diff() / grouped['Daily tests'], 0)
-grouped['Deaths/cases per week'] = grouped['Deaths'].diff() / grouped['Cases'].diff()
-grouped['Tests/population per week'] = grouped['Daily tests'] / grouped['Population']
+grouped['Cases/tests'] = grouped['Cases'] / grouped['Daily tests']
+grouped['Deaths/cases'] = grouped['Deaths'] / grouped['Cases']
+grouped['Tests/population'] = grouped['Daily tests'] / grouped['Population']
 
-# remove the first week from the data(we don't have the previous week to calculate the difference)
-grouped = grouped.drop(first_week.index)
-# calculate the new columns for the first week
-first_week['Cases/tests per week'] = first_week['Cases'] / first_week['Daily tests']
-first_week['Deaths/cases per week'] = first_week['Deaths'] / first_week['Cases']
-first_week['Tests/population per week'] = first_week['Daily tests'] / first_week['Population']
-
-# add the first week to the start of the data
-grouped = pd.concat([first_week, grouped])
-
-# reset the index
+# Reset the index
 grouped = grouped.reset_index()
 
-new_df = grouped[['Entity', 'Cases/tests per week', 'Deaths/cases per week', 'Tests/population per week']]
+new_df = grouped[['Entity', 'Cases/tests', 'Deaths/cases', 'Tests/population']]
 # remove inf values (no cases in a week)
-new_df = new_df[new_df['Deaths/cases per week'] != np.inf]
+new_df = new_df[new_df['Deaths/cases'] != np.inf]
 # remove nan values (no cases and no deaths in a week)
 new_df = new_df.dropna()
 # remove negative values
-new_df.drop(new_df[new_df['Cases/tests per week'] < 0].index, inplace = True)
-new_df.drop(new_df[new_df['Deaths/cases per week'] < 0].index, inplace = True)
+new_df.drop(new_df[new_df['Cases/tests'] < 0].index, inplace = True)
+new_df.drop(new_df[new_df['Deaths/cases'] < 0].index, inplace = True)
 stats = new_df.describe()
 print(stats)
-
-# Use one hot encoding to convert categorical data to numerical data
-new_df = pd.get_dummies(new_df, columns=['Entity'])
 
 new_df.to_csv('new_dataset.csv', index=False)
 
 
 # --- CLUSTERING ---
 # Standardize the data
+data_values = new_df.drop('Entity', axis=1)
 scaler = StandardScaler()
-X = scaler.fit_transform(new_df.values)
+X = scaler.fit_transform(data_values.values)
 
-# Elbow method to determine the number of clusters
-# Instantiate the clustering model and visualizer
+# ELBOW METHOD
 kmeans = KMeans(init='k-means++', n_init=10)
 visualizer = KElbowVisualizer(kmeans, k=(2,10))
  
 visualizer.fit(X)
 visualizer.show()
+
+# Get the optimal number of clusters suggested by the elbow method
+k_elbow = visualizer.elbow_value_
+
+# SILHOUETTE METHOD
+from yellowbrick.cluster import  SilhouetteVisualizer
+from sklearn.metrics import silhouette_score
+
+silhouette = []
+for k in range(2, 10):
+    kmeans = KMeans(n_clusters = k, n_init=10).fit(X)
+    preds = kmeans.fit_predict(X)
+    silhouette.append(silhouette_score(X, preds))
+    
+plt.plot(range(2, 10), silhouette, 'bo-')
+plt.xlabel('k')
+plt.ylabel('Silhouette score')
+plt.title('Silhouette Method For Optimal k')
+plt.savefig('silhouette.png')
+
+# Get the optimal number of clusters suggested by the Silhouette method
+k_silhouette = silhouette.index(max(silhouette)) + 2
+
+# Compare the results of the two methods and choose the best value of k
+if k_elbow == k_silhouette:
+    print("\nThe optimal number of clusters is:", k_elbow)
