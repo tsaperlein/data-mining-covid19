@@ -36,24 +36,21 @@ grouped = df.groupby(['Entity']).agg({
     'Population': 'mean'
 })
 
+
 # calculate the new columns
-grouped['Cases/tests'] = grouped['Cases'] / grouped['Daily tests']
+# grouped['Cases/tests'] = grouped['Cases'] / grouped['Daily tests']
+grouped['Cases/tests per week'] = np.where(grouped['Daily tests'] != 0, grouped['Cases'].diff() / grouped['Daily tests'], 0)
 grouped['Deaths/cases'] = grouped['Deaths'] / grouped['Cases']
 grouped['Tests/population'] = grouped['Daily tests'] / grouped['Population']
 
-# Reset the index
+# reset the index
 grouped = grouped.reset_index()
 
 new_df = grouped[['Entity', 'Cases/tests', 'Deaths/cases', 'Tests/population']]
-# remove inf values (no cases in a week)
-new_df = new_df[new_df['Deaths/cases'] != np.inf]
-# remove nan values (no cases and no deaths in a week)
-new_df = new_df.dropna()
-# remove negative values
-new_df.drop(new_df[new_df['Cases/tests'] < 0].index, inplace = True)
-new_df.drop(new_df[new_df['Deaths/cases'] < 0].index, inplace = True)
+
 stats = new_df.describe()
 print(stats)
+
 
 new_df.to_csv('new_dataset.csv', index=False)
 
@@ -92,6 +89,9 @@ plt.savefig('silhouette.png')
 
 # Get the optimal number of clusters suggested by the Silhouette method
 k_silhouette = silhouette.index(max(silhouette)) + 2
+
+print("\nElbow method suggests", k_elbow, "clusters")
+print("Silhouette method suggests", k_silhouette, "clusters")
 
 # Compare the results of the two methods and choose the best value of k
 if k_elbow == k_silhouette:
