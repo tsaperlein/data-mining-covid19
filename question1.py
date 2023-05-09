@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.stats import zscore
 
-# Load the CSV file
+# --- Load the CSV file ---
 df = pd.read_csv("data.csv")
 df.info()
 stats = df.describe()
@@ -21,8 +21,9 @@ print(NaNs_data_df)
 negative_tests = (df['Daily tests'] < 0).sum()
 print("\n \nNegative daily tests:", negative_tests)
 df.drop(df[df['Daily tests'] < 0].index, inplace = True)
+# --------------------------------------------
 
-# --- Fill missing values in columns
+# --- Fill missing values in columns ---
 # Fill missing values in "Daily tests" column
 df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='ffill'))
 df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='bfill'))
@@ -30,10 +31,10 @@ df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fi
 df['Cases'] = df['Cases'].fillna(0)
 # Fill missing values in "Deaths" column with 0
 df['Deaths'] = df['Deaths'].fillna(0)
+# --------------------------------------------
 
-
-# --- TIMELINE ------------------------------------
-# --- Plot the number of cases and deaths passing through time
+# --- TIMELINE ---
+# -- Plot the number of cases and deaths passing through time
 # Convert date column to datetime format
 df['Date'] = pd.to_datetime(df['Date'])
 
@@ -69,8 +70,7 @@ ax.legend()
 plt.savefig('images/cases_deaths_diagram.png', dpi=300, bbox_inches='tight')
 # --------------------------------------------
 
-
-# --- MAP ------------------------------------
+# --- MAP ---
 # Find the range of longitude and latitude in the data
 def lng_lat_to_pixels(lng, lat):    
     lng_rad = lng * np.pi / 180
@@ -87,7 +87,6 @@ px, py = lng_lat_to_pixels(max_deaths['Longitude'], max_deaths['Latitude'])
 sizes = max_deaths['Deaths'].values / max_deaths['Population'].values
 extent = [px.min(), px.max(), py.min(), py.max()] 
 
-
 # Plot the points
 plt.figure(figsize=(12, 8))
 plt.axis('equal')
@@ -97,7 +96,7 @@ plt.savefig('images/deaths_population_map.png', dpi=300, bbox_inches='tight')
 # --------------------------------------------
 
 
-# --- Plot/save boxplots for each column
+# --- Plot/save boxplots for each column ---
 columns = ['Entity', 'Continent', 'Date', 'Daily tests', 'Cases', 'Deaths']
 data = df.drop(columns, axis=1).drop_duplicates()
 fig, axs = plt.subplots(3, 3, figsize=(12, 8))
@@ -108,23 +107,26 @@ for i, col in enumerate(data.columns):
 plt.tight_layout()
 plt.savefig("images/boxplots.png", bbox_inches='tight')
 plt.close()
+# --------------------------------------------
 
-# --- Plot histograms for each column
+# --- Plot histograms for each column ---
 columns = ['Date', 'Daily tests', 'Cases', 'Deaths']
 plt.figure(figsize=(16, 9))
 df.drop(columns, axis=1).drop_duplicates().hist(bins=15, figsize=(16, 9), rwidth=0.8)
 plt.savefig("images/histograms.png", bbox_inches='tight')
 plt.close()
+# --------------------------------------------
 
-# --- Plot heatmap for correlation between columns
+# --- Plot heatmap for correlation between columns ---
 # Keep the last line (date) for each country and drop unused columns
 df_last = df.groupby(df['Entity']).tail(1).drop(['Entity', 'Date', 'Continent'], axis=1)
 plt.figure(figsize=(12, 8))
 sns.heatmap(df_last.corr(), annot=True, cmap=plt.cm.Reds)
 plt.savefig("images/correlation-heatmap.png", bbox_inches='tight')
 plt.close()
+# --------------------------------------------
     
-# --- Plot feature-output-variable distributions for each column
+# --- Plot feature-output-variable distributions for each column ---
 # Scatter plots readability: remove outliers in all comuns except in the column 'Continent'
 df_last = df.groupby(df['Entity']).tail(1).drop(['Entity', 'Date'], axis=1)
 column_continent = df_last[['Continent']]
@@ -141,7 +143,9 @@ for column in df_last.columns.drop(['Cases', 'Deaths']):
     file_name = column.replace("/", "-")
     plt.savefig(f"images/Scatter/{file_name}-scatter.png", bbox_inches='tight')
     plt.close()
-#scatter deaths-cases
+# --------------------------------------------
+    
+# --- Scatter deaths-cases ---
 fig, ax = plt.subplots(figsize=(10, 6))
 df_last.plot.scatter(x='Cases', y='Deaths', ax=ax)
 plt.savefig(f"images/Scatter/deaths-cases-scatter.png", bbox_inches='tight')
