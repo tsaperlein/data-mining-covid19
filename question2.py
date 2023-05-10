@@ -92,11 +92,16 @@ print("\n- Elbow method suggests", k_elbow, "clusters")
 print("- Silhouette method suggests", k_silhouette, "clusters")
     
 # --- Silhouette Score ---
-for k in range(2,6):
+plt.figure(figsize=(10,  7))
+scores = {}
+for k in range(2, 6):
+    plt.subplot(2, 2, k - 1)
     kmeans = KMeans(n_clusters=k,n_init=10)
     visualizer = SilhouetteVisualizer(kmeans)
     visualizer.fit(X)
-    visualizer.show(outpath="img/sil_score_" + str(k) + ".png")
+    scores[k] = visualizer.silhouette_score_
+    plt.title(f'clusters: {k} score: {visualizer.silhouette_score_}')
+plt.savefig('img/silhouette_score.png')
 # --------------------------------------------
 
 # --- K-Means Clustering ---
