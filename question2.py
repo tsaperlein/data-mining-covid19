@@ -10,6 +10,10 @@ from yellowbrick.cluster import KElbowVisualizer
 from sklearn.datasets import make_blobs
 from yellowbrick.cluster import  SilhouetteVisualizer
 from sklearn.metrics import silhouette_score
+from sklearn.decomposition import PCA
+# import plotly as py
+# import plotly.graph_objs as go
+# from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
 
 # Load the CSV file
 df = pd.read_csv("data.csv")
@@ -17,12 +21,13 @@ df = pd.read_csv("data.csv")
 # Filter out inaccurate values in "Daily tests" 
 df.drop(df[df['Daily tests'] < 0].index, inplace = True)
 
+
 # --- Fill missing values in columns ---
 # Fill missing values in "Daily tests" column
-# df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='ffill'))
-# df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='bfill'))
-df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='ffill')).reset_index(drop=True)
-df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='bfill')).reset_index(drop=True)
+df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='ffill'))
+df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='bfill'))
+# df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='ffill')).reset_index(drop=True)
+# df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='bfill')).reset_index(drop=True)
 # Fill missing values in "Cases" column with 0
 df['Cases'] = df['Cases'].fillna(0)
 # Fill missing values in "Deaths" column with 0
@@ -60,6 +65,7 @@ data_values = new_df.drop('Entity', axis=1)
 # Standardize the data
 scaler = StandardScaler()
 X = scaler.fit_transform(data_values.values)
+X = pd.DataFrame(X, index=data_values.index, columns=data_values.columns)
 
 # - Elbow Method
 kmeans = KMeans(n_init=10)
@@ -107,7 +113,7 @@ plt.savefig('img/silhouette_score.png')
 # --------------------------------------------
 
 # --- K-Means Clustering ---
-fig = plt.figure()
+""" fig = plt.figure()
 
 # Perform K-Means clustering
 for k in range(2, 6):
@@ -124,5 +130,72 @@ for k in range(2, 6):
 fig.text(0.5, 0.04, 'Cluster centers are marked in red color', ha='center', va='center', fontsize=15, color='r')  
 plt.tight_layout()
 plt.gcf().set_size_inches(13, 7)
-plt.savefig('img/kmeans_clustering.png')
+plt.savefig('img/kmeans_clustering.png') """
 # --------------------------------------------
+
+kmeans = KMeans(n_clusters=4, n_init=10).fit(X)
+clusters = kmeans.predict(X)
+X['Cluster'] = clusters
+
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(X)
+
+
+plt.figure(figsize=(8, 6))
+plt.scatter(x=X_pca[:,0], y=X_pca[:,1], c=kmeans.labels_, 
+            edgecolor='k', s=100, alpha=0.5, cmap='viridis')
+#show centroids
+plt.scatter(x=kmeans.cluster_centers_[:,0], y=kmeans.cluster_centers_[:,1],
+            s=100, c='red', label='centroids')
+plt.grid(visible=True)
+plt.savefig('img/pca.png')
+
+""" PCs_2d = pd.DataFrame(pca.fit_transform(X.drop(["Cluster"], axis=1)))
+PCs_2d.columns = ["PC1_2d", "PC2_2d"]
+
+X = pd.concat([X,PCs_2d], axis=1, join='inner')
+
+cluster0 = X[X["Cluster"] == 0]
+cluster1 = X[X["Cluster"] == 1]
+cluster2 = X[X["Cluster"] == 2]
+
+
+#trace1 is for 'Cluster 0'
+trace1 = go.Scatter(
+                    x = cluster0["PC1_2d"],
+                    y = cluster0["PC2_2d"],
+                    mode = "markers",
+                    name = "Cluster 0",
+                    marker = dict(color = 'rgba(255, 128, 255, 0.8)'),
+                    text = None)
+
+#trace2 is for 'Cluster 1'
+trace2 = go.Scatter(
+                    x = cluster1["PC1_2d"],
+                    y = cluster1["PC2_2d"],
+                    mode = "markers",
+                    name = "Cluster 1",
+                    marker = dict(color = 'rgba(255, 128, 2, 0.8)'),
+                    text = None)
+
+#trace3 is for 'Cluster 2'
+trace3 = go.Scatter(
+                    x = cluster2["PC1_2d"],
+                    y = cluster2["PC2_2d"],
+                    mode = "markers",
+                    name = "Cluster 2",
+                    marker = dict(color = 'rgba(0, 255, 200, 0.8)'),
+                    text = None)
+
+data = [trace1, trace2, trace3]
+
+title = "Visualizing Clusters in Two Dimensions Using PCA"
+
+layout = dict(title = title,
+              xaxis= dict(title= 'PC1',ticklen= 5,zeroline= False),
+              yaxis= dict(title= 'PC2',ticklen= 5,zeroline= False)
+             )
+
+fig = dict(data = data, layout = layout)
+
+iplot(fig) """
