@@ -145,8 +145,8 @@ plt.figure(figsize=(8, 6))
 plt.scatter(x=X_pca[:,0], y=X_pca[:,1], c=kmeans.labels_, 
             edgecolor='k', s=100, alpha=0.5, cmap='viridis')
 #show centroids
-plt.scatter(x=kmeans.cluster_centers_[:,0], y=kmeans.cluster_centers_[:,1],
-            s=100, c='red', label='centroids')
+# plt.scatter(x=kmeans.cluster_centers_[:,0], y=kmeans.cluster_centers_[:,1],
+#             s=100, c='red', label='centroids')
 plt.grid(visible=True)
 plt.savefig('img/pca.png')
 
