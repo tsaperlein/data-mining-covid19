@@ -40,11 +40,13 @@ grouped = df.groupby(['Entity']).agg({
 grouped['Cases/tests'] = grouped['Cases'] / grouped['Daily tests']
 grouped['Deaths/cases'] = grouped['Deaths'] / grouped['Cases']
 grouped['Tests/population'] = grouped['Daily tests'] / grouped['Population']
+grouped['Cases/population'] = grouped['Cases'] / grouped['Population']
+grouped['Deaths/population'] = grouped['Deaths'] / grouped['Population']
 
 # reset the index
 grouped = grouped.reset_index()
 
-new_df = grouped[['Entity', 'Cases/tests', 'Deaths/cases', 'Tests/population']]
+new_df = grouped[['Entity', 'Cases/tests', 'Deaths/cases', 'Tests/population', 'Cases/population', 'Deaths/population']]
 
 stats = new_df.describe()
 print(stats)
