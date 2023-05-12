@@ -15,23 +15,61 @@ from sklearn.decomposition import PCA
 # import plotly.graph_objs as go
 # from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
 
+np.random.seed(0)
+
 # Load the CSV file
 df = pd.read_csv("data.csv")
 
 # Filter out inaccurate values in "Daily tests" 
 df.drop(df[df['Daily tests'] < 0].index, inplace = True)
 
-
 # --- Fill missing values in columns ---
 # Fill missing values in "Daily tests" column
-df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='ffill'))
-df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='bfill'))
-# df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='ffill')).reset_index(drop=True)
-# df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='bfill')).reset_index(drop=True)
+# df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='ffill'))
+# df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='bfill'))
+df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='ffill')).reset_index(drop=True)
+df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='bfill')).reset_index(drop=True)
 # Fill missing values in "Cases" column with 0
 df['Cases'] = df['Cases'].fillna(0)
 # Fill missing values in "Deaths" column with 0
 df['Deaths'] = df['Deaths'].fillna(0)
+
+# --- Remove outliers ---
+# -- 1st method (quantiles) --
+for column in ['Daily tests', 'Cases', 'Deaths', 'Population']:
+    # Compute the 1% and 99% quantiles of the "Daily tests" column
+    q_low = df[column].quantile(0.01)
+    q_high = df[column].quantile(0.99)
+
+    # Filter out values that are outside the quantile range
+    df_new = df[(df[column] < q_high) & (df[column] > q_low)]
+    
+# print the countries of the df that are not in the df_new
+print(set(df['Entity']) - set(df_new['Entity']))
+
+# Compute the mean values for Malta, Iceland, and India
+malta_stats = df.loc[df['Entity'] == 'Malta', ['Daily tests', 'Cases', 'Deaths', 'Population']].mean()
+iceland_stats = df.loc[df['Entity'] == 'Iceland', ['Daily tests', 'Cases', 'Deaths', 'Population']].mean()
+india_stats = df.loc[df['Entity'] == 'India', ['Daily tests', 'Cases', 'Deaths', 'Population']].mean()
+
+# Print the mean values
+print("Malta:\n", malta_stats, '\n')
+print("Iceland:\n", iceland_stats, '\n')
+print("India:\n", india_stats, '\n')
+# --------------------------------------
+# -- 2nd method (Z-score) --
+# Calculate the Z-score for each value in the dataframe
+z_scores = zscore(df[['Daily tests', 'Cases', 'Deaths', 'Population']])
+
+# Filter out rows with Z-scores outside a certain range (e.g. +/- 3)
+df_new = df[(np.abs(z_scores) < 3).all(axis=1)]
+# --------------------------------------
+
+# Describe only the columns Daily tests, Cases, Deaths, Population of the df_new
+print(df[['Daily tests', 'Cases', 'Deaths', 'Population']].describe())
+print('\n')
+print(df_new[['Daily tests', 'Cases', 'Deaths', 'Population']].describe())
+print('\n')
 
 # group the data by country and week, and aggregate the columns
 grouped = df.groupby(['Entity']).agg({
@@ -134,15 +172,14 @@ plt.savefig('img/kmeans_clustering.png') """
 # --------------------------------------------
 
 kmeans = KMeans(n_clusters=4, n_init=10).fit(X)
-clusters = kmeans.predict(X)
+clusters = kmeans.labels_
 X['Cluster'] = clusters
 
 pca = PCA(n_components=2)
 X_pca = pca.fit_transform(X)
 
-
 plt.figure(figsize=(8, 6))
-plt.scatter(x=X_pca[:,0], y=X_pca[:,1], c=kmeans.labels_, 
+plt.scatter(x=X_pca[:,0], y=X_pca[:,1], c=X['Cluster'], 
             edgecolor='k', s=100, alpha=0.5, cmap='viridis')
 #show centroids
 # plt.scatter(x=kmeans.cluster_centers_[:,0], y=kmeans.cluster_centers_[:,1],
