@@ -18,31 +18,7 @@ from sklearn.decomposition import PCA
 np.random.seed(0)
 
 # Load the CSV file
-df = pd.read_csv("data.csv")
-
-# Filter out inaccurate values in "Daily tests" 
-df.drop(df[df['Daily tests'] < 0].index, inplace = True)
-
-# Drop countries with too many missing values in "Daily tests" column
-country_nan_percentage = df.groupby("Entity")["Daily tests"].apply(lambda x: x.isna().mean() * 100)
-threshold = 75      # 75% missing values
-countries_to_drop = country_nan_percentage[country_nan_percentage > threshold].index
-
-# print the countries to drop
-print(countries_to_drop)
-df = df[~df["Entity"].isin(countries_to_drop)].reset_index(drop=True)
-
-# --- Fill missing values in columns ---
-# Fill missing values in "Daily tests" column
-# df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='ffill'))
-# df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='bfill'))
-df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='ffill')).reset_index(drop=True)
-df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='bfill')).reset_index(drop=True)
-
-# Fill missing values in "Cases" column with 0
-df['Cases'] = df['Cases'].fillna(0)
-# Fill missing values in "Deaths" column with 0
-df['Deaths'] = df['Deaths'].fillna(0)
+df = pd.read_csv("modified_dataset.csv")
 
 
 # group the data by country and week, and aggregate the columns
