@@ -23,53 +23,27 @@ df = pd.read_csv("data.csv")
 # Filter out inaccurate values in "Daily tests" 
 df.drop(df[df['Daily tests'] < 0].index, inplace = True)
 
+# Drop countries with too many missing values in "Daily tests" column
+country_nan_percentage = df.groupby("Entity")["Daily tests"].apply(lambda x: x.isna().mean() * 100)
+threshold = 75      # 75% missing values
+countries_to_drop = country_nan_percentage[country_nan_percentage > threshold].index
+
+# print the countries to drop
+print(countries_to_drop)
+df = df[~df["Entity"].isin(countries_to_drop)].reset_index(drop=True)
+
 # --- Fill missing values in columns ---
 # Fill missing values in "Daily tests" column
 # df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='ffill'))
 # df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='bfill'))
 df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='ffill')).reset_index(drop=True)
 df['Daily tests'] = df['Daily tests'].groupby(df['Entity']).apply(lambda x: x.fillna(method='bfill')).reset_index(drop=True)
+
 # Fill missing values in "Cases" column with 0
 df['Cases'] = df['Cases'].fillna(0)
 # Fill missing values in "Deaths" column with 0
 df['Deaths'] = df['Deaths'].fillna(0)
 
-# --- Remove outliers ---
-# -- 1st method (quantiles) --
-for column in ['Daily tests', 'Cases', 'Deaths', 'Population']:
-    # Compute the 1% and 99% quantiles of the "Daily tests" column
-    q_low = df[column].quantile(0.01)
-    q_high = df[column].quantile(0.99)
-
-    # Filter out values that are outside the quantile range
-    df_new = df[(df[column] < q_high) & (df[column] > q_low)]
-    
-# print the countries of the df that are not in the df_new
-print(set(df['Entity']) - set(df_new['Entity']))
-
-# Compute the mean values for Malta, Iceland, and India
-malta_stats = df.loc[df['Entity'] == 'Malta', ['Daily tests', 'Cases', 'Deaths', 'Population']].mean()
-iceland_stats = df.loc[df['Entity'] == 'Iceland', ['Daily tests', 'Cases', 'Deaths', 'Population']].mean()
-india_stats = df.loc[df['Entity'] == 'India', ['Daily tests', 'Cases', 'Deaths', 'Population']].mean()
-
-# Print the mean values
-print("Malta:\n", malta_stats, '\n')
-print("Iceland:\n", iceland_stats, '\n')
-print("India:\n", india_stats, '\n')
-# --------------------------------------
-# -- 2nd method (Z-score) --
-# Calculate the Z-score for each value in the dataframe
-z_scores = zscore(df[['Daily tests', 'Cases', 'Deaths', 'Population']])
-
-# Filter out rows with Z-scores outside a certain range (e.g. +/- 3)
-df_new = df[(np.abs(z_scores) < 3).all(axis=1)]
-# --------------------------------------
-
-# Describe only the columns Daily tests, Cases, Deaths, Population of the df_new
-print(df[['Daily tests', 'Cases', 'Deaths', 'Population']].describe())
-print('\n')
-print(df_new[['Daily tests', 'Cases', 'Deaths', 'Population']].describe())
-print('\n')
 
 # group the data by country and week, and aggregate the columns
 grouped = df.groupby(['Entity']).agg({
