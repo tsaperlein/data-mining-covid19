@@ -46,16 +46,19 @@ print(stats)
 
 new_df.to_csv('new_dataset.csv', index=False)
 
-# --- CLUSTERING ---
+
+
+
+# ----------------------------------------------------
+# -------------------- CLUSTERING --------------------
 data_values = new_df.drop('Entity', axis=1)
 
-# -- Find the optimal number of clusters --
 # Standardize the data
 scaler = StandardScaler()
 X = scaler.fit_transform(data_values.values)
 X = pd.DataFrame(X, index=data_values.index, columns=data_values.columns)
 
-# - Elbow Method
+# --------- Elbow Method
 kmeans = KMeans(n_init=10)
 visualizer = KElbowVisualizer(kmeans, numeric_only=True)
 visualizer.fit(X)
@@ -64,9 +67,9 @@ plt.close()
 
 # Get the optimal number of clusters suggested by the elbow method
 k_elbow = visualizer.elbow_value_
-# --------------------------------------------
 
-# - Sihouette Method
+
+# ---------- Sihouette Method
 silhouette = []
 for k in range(2, 11):
     kmeans = KMeans(n_clusters = k, n_init=10).fit(X)
@@ -81,13 +84,14 @@ plt.savefig('img/silhouette_method.png')
 
 # Get the optimal number of clusters suggested by the Silhouette method
 k_silhouette = silhouette.index(max(silhouette)) + 2
-# --------------------------------------------
+
 
 # Print the results of the three methods
 print("\n- Elbow method suggests", k_elbow, "clusters")
 print("- Silhouette method suggests", k_silhouette, "clusters")
     
-# --- Silhouette Score ---
+
+# ------------ Silhouette Score 
 plt.figure(figsize=(10,  7))
 scores = {}
 for k in range(2, 6):
@@ -98,28 +102,9 @@ for k in range(2, 6):
     scores[k] = visualizer.silhouette_score_
     plt.title(f'clusters: {k} score: {visualizer.silhouette_score_}')
 plt.savefig('img/silhouette_score.png')
-# --------------------------------------------
 
-# --- K-Means Clustering ---
-""" fig = plt.figure()
 
-# Perform K-Means clustering
-for k in range(2, 6):
-    kmeans = KMeans(n_clusters=k, init='k-means++', n_init=10)
-    clusters = kmeans.fit(X)
-    ax = fig.add_subplot(2, 2, k-1)
-    ax.scatter(X[:, 0], X[:, 1], c=clusters.labels_, cmap='viridis')
-    ax.set_title('k = ' + str(k))
-    ax.set_xlabel('Cases/tests')
-    ax.set_ylabel('Deaths/cases')
-    ax.scatter(clusters.cluster_centers_[:, 0], clusters.cluster_centers_[:, 1], c='red', s=50)
-
-# Plot the figure
-fig.text(0.5, 0.04, 'Cluster centers are marked in red color', ha='center', va='center', fontsize=15, color='r')  
-plt.tight_layout()
-plt.gcf().set_size_inches(13, 7)
-plt.savefig('img/kmeans_clustering.png') """
-# --------------------------------------------
+# -------------- PCA
 
 kmeans = KMeans(n_clusters=4, n_init=10).fit(X)
 clusters = kmeans.labels_
@@ -137,52 +122,62 @@ plt.scatter(x=X_pca[:,0], y=X_pca[:,1], c=X['Cluster'],
 plt.grid(visible=True)
 plt.savefig('img/pca.png')
 
-""" PCs_2d = pd.DataFrame(pca.fit_transform(X.drop(["Cluster"], axis=1)))
-PCs_2d.columns = ["PC1_2d", "PC2_2d"]
-
-X = pd.concat([X,PCs_2d], axis=1, join='inner')
-
-cluster0 = X[X["Cluster"] == 0]
-cluster1 = X[X["Cluster"] == 1]
-cluster2 = X[X["Cluster"] == 2]
 
 
-#trace1 is for 'Cluster 0'
-trace1 = go.Scatter(
-                    x = cluster0["PC1_2d"],
-                    y = cluster0["PC2_2d"],
-                    mode = "markers",
-                    name = "Cluster 0",
-                    marker = dict(color = 'rgba(255, 128, 255, 0.8)'),
-                    text = None)
 
-#trace2 is for 'Cluster 1'
-trace2 = go.Scatter(
-                    x = cluster1["PC1_2d"],
-                    y = cluster1["PC2_2d"],
-                    mode = "markers",
-                    name = "Cluster 1",
-                    marker = dict(color = 'rgba(255, 128, 2, 0.8)'),
-                    text = None)
+# ---------------------------------------------------
+# --------------- Cluster Analysis ------------------
 
-#trace3 is for 'Cluster 2'
-trace3 = go.Scatter(
-                    x = cluster2["PC1_2d"],
-                    y = cluster2["PC2_2d"],
-                    mode = "markers",
-                    name = "Cluster 2",
-                    marker = dict(color = 'rgba(0, 255, 200, 0.8)'),
-                    text = None)
+clustered_df = new_df.copy()
+clustered_df["Cluster"] = clusters
 
-data = [trace1, trace2, trace3]
+# Violin Plot
+i=0
+for metric in clustered_df.columns[1:]:
+    i+=1
+    plt.figure(figsize=(8, 6))
+    sns.violinplot(x=clustered_df['Cluster'], y=clustered_df[metric])
+    plt.savefig(f"img/violin_{i}.png")
+    plt.close()
 
-title = "Visualizing Clusters in Two Dimensions Using PCA"
 
-layout = dict(title = title,
-              xaxis= dict(title= 'PC1',ticklen= 5,zeroline= False),
-              yaxis= dict(title= 'PC2',ticklen= 5,zeroline= False)
-             )
 
-fig = dict(data = data, layout = layout)
+country_info = df.groupby(['Entity']).agg({
+    "Entity": "first",
+    "Latitude": "mean",
+    "Longitude": "mean",
+    "Average temperature per year": "mean",
+    "Hospital beds per 1000 people": "mean",
+    "Medical doctors per 1000 people": "mean",
+    "GDP/Capita": "mean",
+    "Median age": "mean",
+    "Population aged 65 and over (%)": "mean"
+})
 
-iplot(fig) """
+clustered_info = country_info.copy()
+
+clustered_info["Cluster"] = clusters
+
+# Print the countries in each cluster
+for cluster in range(0, 4):
+    print(f"\nCluster {cluster} countries:")
+    print(clustered_info[clustered_info["Cluster"] == cluster]["Entity"].values)
+
+# # Compute the mean for each characteristic within each cluster
+# numeric = clustered_info.drop("Entity", axis=1)
+# cluster_characteristics = numeric.groupby("Cluster").mean()
+
+# for cluster, characteristics in cluster_characteristics.iterrows():
+#     print(f"Cluster {cluster} characteristics:")
+#     print(characteristics)
+#     print("\n")
+
+
+# Violin Plot
+j=0
+for info in clustered_info.columns[1:-1]:
+    j+=1
+    plt.figure(figsize=(8, 6))
+    sns.violinplot(x=clustered_info['Cluster'], y=clustered_info[info])
+    plt.savefig(f"img/violin_info{j}.png")
+
