@@ -2,3 +2,12 @@ images
 other
 new_dataset.csv
 img
+
+# For Mac
+.DS_Store
+
+# Images
+*.png
+
+metrics.csv
+predictions.csv
