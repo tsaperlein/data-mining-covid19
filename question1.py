@@ -18,10 +18,9 @@ print("\n \n")
 print(NaNs_data_df)
 
 # Filter out inaccurate values in "Daily tests" 
-# negative_tests = (df['Daily tests'] < 0).sum()
-# print("\n \nNegative daily tests:", negative_tests)
 df.drop(df[df['Daily tests'] < 0].index, inplace = True)
 # --------------------------------------------
+
 
 # Drop countries with too many missing values in "Daily tests" column
 country_nan_percentage = df.groupby("Entity")["Daily tests"].apply(lambda x: x.isna().mean() * 100)
@@ -29,6 +28,7 @@ threshold = 75      # 75% missing values
 countries_to_drop = country_nan_percentage[country_nan_percentage > threshold].index
 
 # print the countries to drop
+print("\n \n")
 print(countries_to_drop)
 df = df[~df["Entity"].isin(countries_to_drop)].reset_index(drop=True)
 
@@ -43,7 +43,7 @@ df['Deaths'] = df['Deaths'].fillna(0)
 # --------------------------------------------
 
 # Save df to a new csv file
-df.to_csv('modified_dataset.csv', index=False)
+df.to_csv('modified_dataframe.csv', index=False)
 
 # --- TIMELINE ---
 # -- Plot the number of cases and deaths passing through time

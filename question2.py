@@ -11,17 +11,15 @@ from sklearn.datasets import make_blobs
 from yellowbrick.cluster import  SilhouetteVisualizer
 from sklearn.metrics import silhouette_score
 from sklearn.decomposition import PCA
-# import plotly as py
-# import plotly.graph_objs as go
-# from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
+
 
 np.random.seed(0)
 
 # Load the CSV file
-df = pd.read_csv("modified_dataset.csv")
+df = pd.read_csv("modified_dataframe.csv")
 
 
-# group the data by country and week, and aggregate the columns
+# group the data by country and aggregate the columns
 grouped = df.groupby(['Entity']).agg({
     'Daily tests': 'sum',
     'Cases': 'max',
@@ -44,7 +42,7 @@ new_df = grouped[['Entity', 'Cases/tests', 'Deaths/cases', 'Tests/population', '
 stats = new_df.describe()
 print(stats)
 
-new_df.to_csv('new_dataset.csv', index=False)
+new_df.to_csv('new_dataframe.csv', index=False)
 
 
 
@@ -86,7 +84,7 @@ plt.savefig('img/silhouette_method.png')
 k_silhouette = silhouette.index(max(silhouette)) + 2
 
 
-# Print the results of the three methods
+# Print the results of the two methods
 print("\n- Elbow method suggests", k_elbow, "clusters")
 print("- Silhouette method suggests", k_silhouette, "clusters")
     
