@@ -12,6 +12,7 @@ from yellowbrick.cluster import  SilhouetteVisualizer
 from sklearn.metrics import silhouette_score
 from sklearn.decomposition import PCA
 
+
 np.random.seed(0)
 
 # Load the CSV file
