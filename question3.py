@@ -19,7 +19,7 @@ tf.random.set_seed(0)
 
 
 # Load the CSV file
-df = pd.read_csv("modified_dataset.csv")
+df = pd.read_csv("modified_dataframe.csv")
 
 # Keep only the data for Greece
 df_gr = df[df["Entity"] == "Greece"]
