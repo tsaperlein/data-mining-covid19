@@ -82,32 +82,6 @@ ax.legend()
 plt.savefig('images/cases_deaths_diagram.png', dpi=300, bbox_inches='tight')
 # --------------------------------------------
 
-# --- MAP ---
-# Find the range of longitude and latitude in the data
-def lng_lat_to_pixels(lng, lat):    
-    lng_rad = lng * np.pi / 180
-    lat_rad = lat * np.pi / 180
-    x = (256/(2*np.pi))*(lng_rad + np.pi)
-    y = (256/(2*np.pi))*(np.log(np.tan(np.pi/4 + lat_rad/2)))
-    return (x, y)
-
-# Group by "Entity" and find the maximum value of "Deaths" for each group
-max_deaths_index = df.groupby(df['Entity'])['Deaths'].idxmax()
-max_deaths = df.loc[max_deaths_index]
-
-px, py = lng_lat_to_pixels(max_deaths['Longitude'], max_deaths['Latitude'])
-sizes = max_deaths['Deaths'].values / max_deaths['Population'].values
-extent = [px.min(), px.max(), py.min(), py.max()] 
-
-# Plot the points
-plt.figure(figsize=(12, 8))
-plt.axis('equal')
-plt.gca().set_facecolor('gray')
-_ = plt.scatter(px, py, s=5000*sizes, color='black')
-plt.savefig('images/deaths_population_map.png', dpi=300, bbox_inches='tight')
-# --------------------------------------------
-
-
 # --- Plot/save boxplots for each column ---
 columns = ['Entity', 'Continent', 'Date', 'Daily tests', 'Cases', 'Deaths']
 data = df.drop(columns, axis=1).drop_duplicates()

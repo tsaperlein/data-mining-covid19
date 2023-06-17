@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import matplotlib as mpl
+import geopandas as gpd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.stats import zscore
@@ -11,9 +11,6 @@ from sklearn.datasets import make_blobs
 from yellowbrick.cluster import  SilhouetteVisualizer
 from sklearn.metrics import silhouette_score
 from sklearn.decomposition import PCA
-# import plotly as py
-# import plotly.graph_objs as go
-# from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
 
 np.random.seed(0)
 
@@ -181,3 +178,34 @@ for info in clustered_info.columns[1:-1]:
     sns.violinplot(x=clustered_info['Cluster'], y=clustered_info[info])
     plt.savefig(f"img/violin_info{j}.png")
 
+
+# --- MAP ---
+# From GeoPandas, our world map data
+worldmap = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+
+# Creating axes and plotting world map
+fig, ax = plt.subplots(figsize=(12, 6))
+worldmap.plot(color="lightgrey", ax=ax)
+
+colors = {0: "red", 1: "blue", 2: "green", 3: "yellow"}
+
+# Plotting our Enitites with different colors depending on the cluster
+for country in clustered_info['Entity']:
+    x = df[df['Entity'] == country]['Longitude']
+    y = df[df['Entity'] == country]['Latitude']
+    cluster = clustered_info[clustered_info['Entity'] == country]['Cluster'].values[0]
+    population = df[df['Entity'] == country]['Population'].values[0]
+    ax.scatter(x, y, color=colors[cluster], alpha=1, s=pow(population/1000000, 0.6))
+    
+# Show colors legend
+for cluster, color in colors.items():
+    ax.scatter([], [], c=color, alpha=1, s=15, label=f"Cluster {cluster}")
+
+ax.legend(scatterpoints=1, frameon=True, labelspacing=1, loc='lower left', facecolor='gray', fontsize=12, labelcolor='white');
+
+# Creating axis limits and title
+plt.xlim([-180, 180])
+plt.ylim([-90, 90])
+
+plt.title("Countries by cluster")
+plt.savefig("img/countries_by_cluster.png", dpi=300, bbox_inches='tight')
