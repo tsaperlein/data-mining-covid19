@@ -1,6 +1,7 @@
 images
 other
 new_dataset.csv
+modified_dataframe.csv
 img
 
 # For Mac
@@ -11,3 +12,6 @@ img
 
 metrics.csv
 predictions.csv
+predictions.png
+
+positivity_rate_current_future.png
