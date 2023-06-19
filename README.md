@@ -6,9 +6,13 @@ The file "data.csv" contains data on the daily evolution of the disease COVID19 
 
 
 - Programming Languages: Python 3.11
-- Libraries: Pandas, Seaborn, Numpy, Matplotlib, Spicy
+- Libraries: Pandas, Seaborn, Numpy, Matplotlib, Spicy, Yellowbrick, Tensorflow, Sklearn, Keras, Geopandas
 
 #### question1.py
 A standard analysis of the given data, statistics and plots.
 
+#### question2.py
+Clustering of countries based on their success in dealing with the virus, clustering analysis.
 
+#### question3.py
+Train RNN and SVM models with 2020 data of Greece to predict positivity rate in the country for 3 days later.
