@@ -1,8 +1,6 @@
-images
-other
-new_dataset.csv
+new_dataframe.csv
 modified_dataframe.csv
-img
+clustered_data.csv
 
 # For Mac
 .DS_Store

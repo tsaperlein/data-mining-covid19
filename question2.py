@@ -60,7 +60,7 @@ X = pd.DataFrame(X, index=data_values.index, columns=data_values.columns)
 kmeans = KMeans(n_init=10)
 visualizer = KElbowVisualizer(kmeans, numeric_only=True)
 visualizer.fit(X)
-visualizer.show(outpath="img/elbow_method.png")
+visualizer.show(outpath="q2/elbow_method.png")
 plt.close()
 
 # Get the optimal number of clusters suggested by the elbow method
@@ -78,7 +78,7 @@ plt.plot(range(2, 11), silhouette, 'bo-')
 plt.xlabel('k')
 plt.ylabel('Silhouette score')
 plt.title('Silhouette Method For Optimal k')
-plt.savefig('img/silhouette_method.png')
+plt.savefig('q2/silhouette_method.png')
 
 # Get the optimal number of clusters suggested by the Silhouette method
 k_silhouette = silhouette.index(max(silhouette)) + 2
@@ -99,7 +99,7 @@ for k in range(2, 6):
     visualizer.fit(X)
     scores[k] = visualizer.silhouette_score_
     plt.title(f'clusters: {k} score: {visualizer.silhouette_score_}')
-plt.savefig('img/silhouette_score.png')
+plt.savefig('q2/silhouette_score.png')
 
 
 # -------------- PCA
@@ -118,7 +118,7 @@ plt.scatter(x=X_pca[:,0], y=X_pca[:,1], c=X['Cluster'],
 # plt.scatter(x=kmeans.cluster_centers_[:,0], y=kmeans.cluster_centers_[:,1],
 #             s=100, c='red', label='centroids')
 plt.grid(visible=True)
-plt.savefig('img/pca.png')
+plt.savefig('q2/pca.png')
 
 
 
@@ -141,7 +141,7 @@ for metric in clustered_df.columns[1:-2]:
     i+=1
     plt.figure(figsize=(8, 6))
     sns.violinplot(x=clustered_df['Cluster'], y=clustered_df[metric])
-    plt.savefig(f"img/violin_{i}.png")
+    plt.savefig(f"q2/violin_{i}.png")
     plt.close()
 
 print("\n\n")
@@ -173,7 +173,7 @@ for info in clustered_info.columns[3:-2]:
     j+=1
     plt.figure(figsize=(8, 6))
     sns.violinplot(x=clustered_info['Cluster'], y=clustered_info[info])
-    plt.savefig(f"img/violin_info{j}.png")
+    plt.savefig(f"q2/violin_info{j}.png")
 
 # Population mean value
 population_0 = clustered_info[clustered_info["Cluster"] == 0]["Population"].mean()
@@ -218,4 +218,4 @@ plt.xlim([-180, 180])
 plt.ylim([-90, 90])
 
 plt.title("Countries by cluster")
-plt.savefig("img/countries_by_cluster.png", dpi=300, bbox_inches='tight')
+plt.savefig("q2/countries_by_cluster.png", dpi=300, bbox_inches='tight')

@@ -79,7 +79,7 @@ ax.set_yscale('log')
 ax.legend()
 
 # Save plot
-plt.savefig('images/cases_deaths_diagram.png', dpi=300, bbox_inches='tight')
+plt.savefig('q1/cases_deaths_diagram.png', dpi=300, bbox_inches='tight')
 # --------------------------------------------
 
 # --- Plot/save boxplots for each column ---
@@ -91,7 +91,7 @@ for i, col in enumerate(data.columns):
     axs[i].boxplot(data[col])
     axs[i].set_title(col)
 plt.tight_layout()
-plt.savefig("images/boxplots.png", bbox_inches='tight')
+plt.savefig("q1/boxplots.png", bbox_inches='tight')
 plt.close()
 # --------------------------------------------
 
@@ -99,7 +99,7 @@ plt.close()
 columns = ['Date', 'Daily tests', 'Cases', 'Deaths']
 plt.figure(figsize=(16, 9))
 df.drop(columns, axis=1).drop_duplicates().hist(bins=15, figsize=(16, 9), rwidth=0.8)
-plt.savefig("images/histograms.png", bbox_inches='tight')
+plt.savefig("q1/histograms.png", bbox_inches='tight')
 plt.close()
 # --------------------------------------------
 
@@ -108,7 +108,7 @@ plt.close()
 df_last = df.groupby(df['Entity']).tail(1).drop(['Entity', 'Date', 'Continent'], axis=1)
 plt.figure(figsize=(12, 8))
 sns.heatmap(df_last.corr(), annot=True, cmap=plt.cm.Reds)
-plt.savefig("images/correlation-heatmap.png", bbox_inches='tight')
+plt.savefig("q1/correlation-heatmap.png", bbox_inches='tight')
 plt.close()
 # --------------------------------------------
     
@@ -127,12 +127,12 @@ for column in df_last.columns.drop(['Cases', 'Deaths']):
     if column == 'Continent':
         fig.autofmt_xdate(rotation=90)
     file_name = column.replace("/", "-")
-    plt.savefig(f"images/Scatter/{file_name}-scatter.png", bbox_inches='tight')
+    plt.savefig(f"q1/Scatter/{file_name}-scatter.png", bbox_inches='tight')
     plt.close()
 # --------------------------------------------
     
 # --- Scatter deaths-cases ---
 fig, ax = plt.subplots(figsize=(10, 6))
 df_last.plot.scatter(x='Cases', y='Deaths', ax=ax)
-plt.savefig(f"images/Scatter/deaths-cases-scatter.png", bbox_inches='tight')
+plt.savefig(f"q1/Scatter/deaths-cases-scatter.png", bbox_inches='tight')
 plt.close()
