@@ -129,17 +129,27 @@ plt.savefig('img/pca.png')
 clustered_df = new_df.copy()
 clustered_df["Cluster"] = clusters
 
+# Print the countries in each cluster
+for cluster in range(0, 4):
+    print(f"\nCluster {cluster} countries:")
+    print(clustered_df[clustered_df["Cluster"] == cluster]["Entity"].values)
+
+
 # Violin Plot
 i=0
-for metric in clustered_df.columns[1:]:
+for metric in clustered_df.columns[1:-2]:
     i+=1
     plt.figure(figsize=(8, 6))
     sns.violinplot(x=clustered_df['Cluster'], y=clustered_df[metric])
     plt.savefig(f"img/violin_{i}.png")
     plt.close()
 
+print("\n\n")
+print(clustered_df[clustered_df["Cluster"] == 3])
 
 
+
+# the unused columns
 country_info = df.groupby(['Entity']).agg({
     "Entity": "first",
     "Latitude": "mean",
@@ -149,35 +159,34 @@ country_info = df.groupby(['Entity']).agg({
     "Medical doctors per 1000 people": "mean",
     "GDP/Capita": "mean",
     "Median age": "mean",
-    "Population aged 65 and over (%)": "mean"
+    "Population aged 65 and over (%)": "mean",
+    "Population": "mean"
 })
-
 clustered_info = country_info.copy()
-
 clustered_info["Cluster"] = clusters
 
-# Print the countries in each cluster
-for cluster in range(0, 4):
-    print(f"\nCluster {cluster} countries:")
-    print(clustered_info[clustered_info["Cluster"] == cluster]["Entity"].values)
-
-# # Compute the mean for each characteristic within each cluster
-# numeric = clustered_info.drop("Entity", axis=1)
-# cluster_characteristics = numeric.groupby("Cluster").mean()
-
-# for cluster, characteristics in cluster_characteristics.iterrows():
-#     print(f"Cluster {cluster} characteristics:")
-#     print(characteristics)
-#     print("\n")
 
 
 # Violin Plot
 j=0
-for info in clustered_info.columns[1:-1]:
+for info in clustered_info.columns[3:-2]:
     j+=1
     plt.figure(figsize=(8, 6))
     sns.violinplot(x=clustered_info['Cluster'], y=clustered_info[info])
     plt.savefig(f"img/violin_info{j}.png")
+
+# Population mean value
+population_0 = clustered_info[clustered_info["Cluster"] == 0]["Population"].mean()
+population_1 = clustered_info[clustered_info["Cluster"] == 1]["Population"].mean()
+population_2 = clustered_info[clustered_info["Cluster"] == 2]["Population"].mean()
+population_3 = clustered_info[clustered_info["Cluster"] == 3]["Population"].mean()
+print("\n\n")
+print(f"Population mean value for cluster 0: {population_0}")
+print(f"Population mean value for cluster 1: {population_1}")
+print(f"Population mean value for cluster 2: {population_2}")
+print(f"Population mean value for cluster 3: {population_3}")
+
+
 
 
 # --- MAP ---
