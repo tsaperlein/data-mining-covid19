@@ -45,7 +45,7 @@ plt.plot(future_set["Date"], future_set["Positivity Rate"], label="Future Set", 
 plt.axvline(x="2021-01-01", color="red", linestyle="--")
 plt.legend()
 plt.xticks(np.arange(0, len(df_gr), 7), rotation=45)
-plt.savefig("positivity_rate_current_future.png", bbox_inches="tight")
+plt.savefig("question3/positivity_rate_current_future.png", bbox_inches="tight")
 plt.close()
 # --------------------------------------------------------------------------------------------------------------------
 
@@ -122,7 +122,7 @@ y_pred_rnn = RNNmodel.predict(X)
 # Create a new dataframe with the actual values and the predicted values
 predictions = pd.DataFrame({"Date": future_set["Date"], "Actual": y.flatten(), "RNN": y_pred_rnn.flatten(), "SVM": y_pred_svm.flatten()})
 # Save the dataframe to a CSV file
-predictions.to_csv("predictions.csv", index=False)
+predictions.to_csv("question3/predictions.csv", index=False)
 
 # Print the MSE for the predictions
 mse_rnn = mean_squared_error(y, y_pred_rnn)
@@ -137,7 +137,7 @@ plt.plot(predictions["Date"], predictions["RNN"], label="RNN", color="orange")
 plt.plot(predictions["Date"], predictions["SVM"], label="SVM", color="green")
 plt.legend(loc=2)
 plt.xticks(np.arange(0, len(future_set), 7), rotation=45)
-plt.savefig("predictions.png", bbox_inches="tight")
+plt.savefig("question3/predictions.png", bbox_inches="tight")
 plt.close()
 # --------------------------------------------------------------------------------------------------------------------
 
@@ -160,5 +160,5 @@ for model in ['RNN', 'SVM']:
     
 metrics = metrics.reset_index(drop=True)
 # Save the metrics to a csv file
-metrics.to_csv("metrics.csv")
+metrics.to_csv("question3/metrics.csv")
 # --------------------------------------------------------------------------------------------------------------------

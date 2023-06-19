@@ -6,12 +6,3 @@ img
 
 # For Mac
 .DS_Store
-
-# Images
-*.png
-
-metrics.csv
-predictions.csv
-predictions.png
-
-positivity_rate_current_future.png
